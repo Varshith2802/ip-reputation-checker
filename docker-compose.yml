@@ -1,0 +1,117 @@
+<<<<<<< HEAD
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/authdb
+    depends_on:
+      - mongodb
+    networks:
+      - ip-reputation-network
+
+  api-service:
+    build:
+      context: ./api-service
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/apidb
+      - ANALYSIS_SERVICE_URL=http://analysis-service:8002
+    depends_on:
+      - mongodb
+      - auth-service
+    networks:
+      - ip-reputation-network
+
+  analysis-service:
+    build:
+      context: ./analysis-service
+    container_name: analysis-service
+    ports:
+      - "3000:8002"
+    networks:
+      - ip-reputation-network
+
+  frontend-web:
+    build:
+      context: ./frontend-web
+    ports:
+      - "8080:80"            # or "8080:80" if 80 is blocked on Windows
+    depends_on:
+      - auth-service
+      - api-service
+    networks:
+      - ip-reputation-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - ip-reputation-network
+
+networks:
+  ip-reputation-network:
+    driver: bridge
+=======
+services:
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/authdb
+    depends_on:
+      - mongodb
+    networks:
+      - ip-reputation-network
+
+  api-service:
+    build:
+      context: ./api-service
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/apidb
+      - ANALYSIS_SERVICE_URL=http://analysis-service:8002
+    depends_on:
+      - mongodb
+      - auth-service
+    networks:
+      - ip-reputation-network
+
+  analysis-service:
+    build:
+      context: ./analysis-service
+    container_name: analysis-service
+    ports:
+      - "3000:8002"
+    networks:
+      - ip-reputation-network
+
+  frontend-web:
+    build:
+      context: ./frontend-web
+    ports:
+      - "8080:80"            # or "8080:80" if 80 is blocked on Windows
+    depends_on:
+      - auth-service
+      - api-service
+    networks:
+      - ip-reputation-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - ip-reputation-network
+
+networks:
+  ip-reputation-network:
+    driver: bridge
+>>>>>>> 4aac0aa (Initial commit: IP Reputation Checker microservices + Kubernetes manifests)

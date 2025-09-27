@@ -1,0 +1,17 @@
+﻿spec:
+  template:
+    spec:
+      containers:
+      - name: analysis-service
+        readinessProbe:
+          httpGet:
+            path: /check-ip?ip=1.1.1.1
+            port: 8002
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+<<<<<<< HEAD
+          failureThreshold: 3
+=======
+          failureThreshold: 3
+>>>>>>> 4aac0aa (Initial commit: IP Reputation Checker microservices + Kubernetes manifests)

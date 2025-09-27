@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IP Reputation Checker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
+    .container { max-width: 600px; margin: auto; padding: 2rem; }
+    .card {
+      background-color: white; border-radius: 1rem;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+      padding: 2rem;
+    }
+    .result-item {
+      display: flex; justify-content: space-between; padding: .75rem 0; border-bottom: 1px solid #e5e7eb;
+    }
+    .result-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<div id="app" class="w-full">
+  <!-- Auth -->
+  <div id="auth-view" class="container card">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Welcome to IP Checker</h2>
+    <div id="auth-message" class="text-center mb-4 text-red-500"></div>
+
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label for="login-username" class="block text-sm font-medium text-gray-700">Username</label>
+        <input id="login-username" name="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
+      </div>
+      <div>
+        <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="login-password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
+      </div>
+      <button class="w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Login
+      </button>
+    </form>
+
+    <p class="text-center text-sm mt-4 text-gray-600">
+      Don't have an account?
+      <a href="#" id="show-register" class="font-medium text-blue-600 hover:text-blue-500">Register here</a>
+    </p>
+
+    <form id="register-form" class="space-y-4 mt-6 hidden">
+      <div>
+        <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
+        <input id="register-username" name="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
+      </div>
+      <div>
+        <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="register-password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required />
+      </div>
+      <button class="w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+        Register
+      </button>
+    </form>
+  </div>
+
+  <!-- Checker -->
+  <div id="checker-view" class="container card hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">IP Reputation Checker</h2>
+      <button id="logout-button" class="py-1 px-3 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+        Logout
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label for="ip-input" class="block text-sm font-medium text-gray-700">Enter IP Address</label>
+        <input id="ip-input" name="ip" placeholder="e.g., 8.8.8.8"
+               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"/>
+      </div>
+      <button id="check-button" class="w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Check IP
+      </button>
+    </div>
+
+    <div id="result-container" class="mt-6 text-gray-700"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const state = {
+      isLoggedIn: false,
+      view: 'auth', // default: show login first
+      message: '',
+      loading: false,
+      results: null
+    };
+
+    // Elements
+    const authView = document.getElementById('auth-view');
+    const checkerView = document.getElementById('checker-view');
+    const authMessage = document.getElementById('auth-message');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const showRegisterLink = document.getElementById('show-register');
+    const checkButton = document.getElementById('check-button');
+    const ipInput = document.getElementById('ip-input');
+    const resultContainer = document.getElementById('result-container');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Restore login state from JWT token
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      // Verify token is still valid
+      verifyTokenAndSetState();
+    }
+
+    // UI wiring
+    loginForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await handleLogin(loginForm.elements.username.value, loginForm.elements.password.value);
+    });
+
+    registerForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await handleRegister(registerForm.elements.username.value, registerForm.elements.password.value);
+    });
+
+    showRegisterLink?.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerForm.classList.toggle('hidden');
+      loginForm.classList.toggle('hidden');
+    });
+
+    checkButton?.addEventListener('click', async () => {
+      const ip = ipInput.value.trim();
+      if (isValidIp(ip)) {
+        await handleIpCheck(ip);
+      } else {
+        state.message = 'Please enter a valid IP address.';
+        renderApp();
+      }
+    });
+
+    logoutButton?.addEventListener('click', () => handleLogout());
+
+    // Render
+    function renderApp() {
+      authView.classList.add('hidden');
+      checkerView.classList.add('hidden');
+      authMessage.textContent = state.message;
+
+      if (state.view === 'auth') {
+        authView.classList.remove('hidden');
+      } else {
+        checkerView.classList.remove('hidden');
+        renderResults();
+      }
+    }
+
+    function renderResults() {
+      if (state.loading) {
+        resultContainer.innerHTML = `<div class="text-center py-4">Checking IP...</div>`;
+        return;
+      }
+
+      if (state.results) {
+        const r = state.results;
+        resultContainer.innerHTML = `
+          <h3 class="text-xl font-semibold mb-4 text-center">Results for ${r.ip || 'Unknown'}</h3>
+          <div class="result-item">
+            <span class="font-medium">Reputation:</span>
+            <span>${r.reputation ?? 'Unknown'}</span>
+          </div>
+          <div class="result-item">
+            <span class="font-medium">Country:</span>
+            <span>${r.country || 'N/A'}</span>
+          </div>
+          <div class="result-item">
+            <span class="font-medium">Provider:</span>
+            <span>${r.provider || 'N/A'}</span>
+          </div>
+          ${Array.isArray(r.threats) && r.threats.length
+            ? `<div class="mt-4"><h4 class="font-semibold mb-2">Known Threats:</h4>
+                 <ul class="list-disc list-inside space-y-1">
+                   ${r.threats.map(t => `<li>${t}</li>`).join('')}
+                 </ul>
+               </div>`
+            : '' }
+        `;
+      } else {
+        resultContainer.innerHTML = `<div class="text-center py-4 text-gray-500">Enter an IP address and click 'Check IP'</div>`;
+      }
+
+      if (state.message) {
+        resultContainer.innerHTML += `<div class="text-center text-red-500 mt-4">${state.message}</div>`;
+      }
+    }
+
+    // API helpers
+    async function jsonOrText(resp) {
+      const ct = resp.headers.get('content-type') || '';
+      if (ct.includes('application/json')) return resp.json();
+      const text = await resp.text();
+      try { return JSON.parse(text); } catch { return { message: text }; }
+    }
+
+    function pickFirst(obj, paths, fallback=null) {
+      for (const p of paths) {
+        try {
+          const val = p.split('.').reduce((acc, k) => acc?.[k], obj);
+          if (val !== undefined && val !== null && val !== '') return val;
+        } catch {}
+      }
+      return fallback;
+    }
+
+    function deriveReputation(data) {
+      // Prefer explicit reputation string, otherwise infer.
+      const rep = pickFirst(data, ['reputation', 'result.reputation']);
+      if (rep) return rep;
+
+      const malicious = pickFirst(data, ['is_malicious', 'malicious', 'threat.is_malicious', 'risk.malicious'], null);
+      if (malicious === true) return 'Malicious';
+      if (malicious === false) return 'Safe';
+
+      const score = pickFirst(data, ['risk_score', 'score', 'risk.score'], null);
+      if (typeof score === 'number') {
+        if (score >= 70) return `High Risk (${score})`;
+        if (score >= 40) return `Medium Risk (${score})`;
+        return `Low Risk (${score})`;
+      }
+      return 'Unknown';
+    }
+
+    async function handleLogin(username, password) {
+      state.message = '';
+      try {
+        const resp = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await jsonOrText(resp);
+
+        if (resp.ok) {
+          // Store JWT token instead of simple boolean
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('token_type', data.token_type);
+          state.isLoggedIn = true;
+          state.view = 'checker';
+          state.message = 'Login successful!';
+        } else {
+          state.message = `Login failed: ${data.detail || data.message || resp.status}`;
+        }
+      } catch (e) {
+        state.message = `An error occurred: ${e.message}`;
+      } finally {
+        renderApp();
+      }
+    }
+
+    async function handleRegister(username, password) {
+      state.message = '';
+      try {
+        const resp = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await jsonOrText(resp);
+
+        if (resp.ok) {
+          state.message = 'Registration successful! You can now log in.';
+          registerForm.classList.add('hidden');
+          loginForm.classList.remove('hidden');
+        } else {
+          state.message = `Registration failed: ${data.detail || data.message || resp.status}`;
+        }
+      } catch (e) {
+        state.message = `An error occurred: ${e.message}`;
+      } finally {
+        renderApp();
+      }
+    }
+
+    // Token verification function
+    async function verifyTokenAndSetState() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      
+      try {
+        const res = await fetch('/auth/verify-token', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (res.ok) {
+          state.isLoggedIn = true;
+          state.view = 'checker';
+        } else {
+          // Token is invalid, clear it
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('token_type');
+        }
+      } catch (e) {
+        // Network error, clear token
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('token_type');
+      }
+    }
+
+    // Get authorization header
+    function getAuthHeaders() {
+      const token = localStorage.getItem('access_token');
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+     async function handleIpCheck(ip) {
+    state.loading = true;
+    state.message = '';
+    renderApp();
+
+    try {
+      const res = await fetch(`/auth/check-reputation/${encodeURIComponent(ip)}`, {
+        headers: getAuthHeaders()
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        // Normalize fields from API so the UI always has what it needs
+        const normalized = {
+          ip: data.query || data.ip || ip,
+          reputation:
+            data.reputation ||
+            (typeof data.threat_score === 'number'
+              ? (data.threat_score >= 50 ? 'Malicious' : 'Safe')
+              : 'Safe'),
+          country:
+            data.country ||
+            data.location?.country ||
+            data.geo?.country ||
+            'N/A',
+          provider:
+            data.provider ||
+            data.isp ||
+            data.as?.name ||
+            data.org ||
+            'N/A',
+          threats: Array.isArray(data.threats) ? data.threats : []
+        };
+
+        state.results = normalized;
+      } else {
+        if (res.status === 401) {
+          // Token expired, redirect to login
+          handleLogout();
+          state.message = 'Session expired. Please log in again.';
+        } else {
+          state.message = `IP check failed: ${data.detail || data.message || res.statusText}`;
+        }
+      }
+    } catch (err) {
+      state.message = `An error occurred: ${err.message}`;
+    } finally {
+      state.loading = false;
+      renderApp();
+    }
+  }
+
+    function handleLogout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('token_type');
+      state.isLoggedIn = false;
+      state.view = 'auth';
+      state.results = null;
+      state.message = 'You have been logged out.';
+      renderApp();
+    }
+
+    function isValidIp(ip) {
+      const ipv4 = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+      return ipv4.test(ip);
+    }
+
+    // initial
+    renderApp();
+  });
+</script>
+</body>
+</html>
+

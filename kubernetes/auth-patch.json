@@ -1,0 +1,22 @@
+{
+  "spec": {
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": { "maxUnavailable": 0, "maxSurge": 1 }
+    },
+    "template": {
+      "spec": {
+        "containers": [{
+          "name": "auth-service",
+          "imagePullPolicy": "Always",
+          "env": [
+            { "name": "MONGO_URI",     "valueFrom": { "configMapKeyRef": { "name": "auth-config", "key": "MONGO_URI" } } },
+            { "name": "MONGO_DB_NAME", "valueFrom": { "configMapKeyRef": { "name": "auth-config", "key": "MONGO_DB_NAME" } } },
+            { "name": "MONGODB_URI",   "valueFrom": { "configMapKeyRef": { "name": "auth-config", "key": "MONGODB_URI" } } }
+          ],
+          "readinessProbe": { "httpGet": { "path": "/health", "port": 8000 }, "initialDelaySeconds": 2, "periodSeconds": 5 },
+          "resources": { "requests": { "cpu": "100m", "memory": "128Mi" }, "limits": { "cpu": "300m", "memory": "384Mi" } }
+        }]}
+    }
+  }
+}

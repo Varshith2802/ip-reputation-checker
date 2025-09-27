@@ -1,0 +1,14 @@
+﻿spec:
+  template:
+    spec:
+      containers:
+      - name: metrics-server
+        args:
+        - --cert-dir=/tmp
+        - --secure-port=4443
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+<<<<<<< HEAD
+        - --kubelet-insecure-tls
+=======
+        - --kubelet-insecure-tls
+>>>>>>> 4aac0aa (Initial commit: IP Reputation Checker microservices + Kubernetes manifests)

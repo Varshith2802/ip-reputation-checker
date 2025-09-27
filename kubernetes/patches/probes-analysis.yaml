@@ -1,0 +1,47 @@
+<<<<<<< HEAD
+spec:
+  template:
+    spec:
+      containers:
+      - name: analysis-service
+        livenessProbe:
+          $patch: replace
+          tcpSocket:
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        readinessProbe:
+          $patch: replace
+          httpGet:
+            path: /check-ip?ip=1.1.1.1
+            port: 8002
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+=======
+spec:
+  template:
+    spec:
+      containers:
+      - name: analysis-service
+        livenessProbe:
+          $patch: replace
+          tcpSocket:
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        readinessProbe:
+          $patch: replace
+          httpGet:
+            path: /check-ip?ip=1.1.1.1
+            port: 8002
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+>>>>>>> 4aac0aa (Initial commit: IP Reputation Checker microservices + Kubernetes manifests)

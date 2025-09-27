@@ -1,0 +1,18 @@
+{
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "auth-service",
+            "readinessProbe": {
+              "httpGet": { "path": "/health", "port": 8000 },
+              "initialDelaySeconds": 2,
+              "periodSeconds": 5
+            }
+          }
+        ]
+      }
+    }
+  }
+}

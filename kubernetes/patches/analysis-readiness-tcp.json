@@ -1,0 +1,11 @@
+﻿[
+  {"op":"remove","path":"/spec/template/spec/containers/0/readinessProbe"},
+  {"op":"add","path":"/spec/template/spec/containers/0/readinessProbe","value":{
+    "tcpSocket":{"port":8002},
+    "initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":2,"failureThreshold":3
+  }}
+<<<<<<< HEAD
+]
+=======
+]
+>>>>>>> 4aac0aa (Initial commit: IP Reputation Checker microservices + Kubernetes manifests)
