@@ -1,0 +1,35 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analysis-service
+  namespace: ip-reputation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analysis-service
+  template:
+    metadata:
+      labels:
+        app: analysis-service
+    spec:
+      containers:
+      - name: analysis-service
+        image: ntvs28/ip-reputation-checker-analysis-service:v1
+        ports:
+        - containerPort: 8002
+        env:
+        - name: ALLOWED_ORIGINS
+          value: "http://localhost:30080,http://127.0.0.1:30080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analysis-service
+  namespace: ip-reputation
+spec:
+  selector:
+    app: analysis-service
+  ports:
+  - port: 8002
+    targetPort: 8002
