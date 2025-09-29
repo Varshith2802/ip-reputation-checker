@@ -16,7 +16,7 @@ kubectl -n ip-reputation set image deploy/auth-service auth-service=ntvs28/ip-re
 kubectl -n ip-reputation set image deploy/api-service api-service=ntvs28/ip-reputation-checker-api-service:v-api-20250927174753
 kubectl -n ip-reputation set image deploy/analysis-service analysis-service=ntvs28/ip-reputation-checker-analysis-service:v1
 kubectl -n ip-reputation set image deploy/frontend-web frontend=ntvs28/ip-reputation-checker-frontend-web:v-ui-20250927205653
-kubectl -n ip-reputation wait --for=condition=available deploy --all --timeout=300s
+kubectl -n ip-reputation wait --for=condition=available deploy --all
 minikube service frontend-web -n ip-reputation
 ```
 
@@ -33,7 +33,7 @@ kubectl -n ip-reputation set image deploy/auth-service auth-service=ntvs28/ip-re
 kubectl -n ip-reputation set image deploy/api-service api-service=ntvs28/ip-reputation-checker-api-service:v-api-20250927174753
 kubectl -n ip-reputation set image deploy/analysis-service analysis-service=ntvs28/ip-reputation-checker-analysis-service:v1
 kubectl -n ip-reputation set image deploy/frontend-web frontend=ntvs28/ip-reputation-checker-frontend-web:v-ui-20250927205653
-kubectl -n ip-reputation wait --for=condition=available deploy --all --timeout=300s
+kubectl -n ip-reputation wait --for=condition=available deploy --all
 minikube service frontend-web -n ip-reputation
 ```
 
@@ -172,7 +172,7 @@ kubectl -n ip-reputation set image deploy/analysis-service analysis-service=ntvs
 kubectl -n ip-reputation set image deploy/frontend-web frontend=ntvs28/ip-reputation-checker-frontend-web:v-ui-20250927205653
 
 # Wait and open
-kubectl -n ip-reputation wait --for=condition=available deploy --all --timeout=300s
+kubectl -n ip-reputation wait --for=condition=available deploy --all
 minikube service frontend-web -n ip-reputation
 ```
 
@@ -194,7 +194,7 @@ kubectl -n ip-reputation set image deploy/analysis-service analysis-service=ntvs
 kubectl -n ip-reputation set image deploy/frontend-web frontend=ntvs28/ip-reputation-checker-frontend-web:v-ui-20250927205653
 
 # Wait and open
-kubectl -n ip-reputation wait --for=condition=available deploy --all --timeout=300s
+kubectl -n ip-reputation wait --for=condition=available deploy --all
 minikube service frontend-web -n ip-reputation
 ```
 
