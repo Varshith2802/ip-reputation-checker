@@ -2,6 +2,20 @@
 
 A **production-ready microservices** application that checks IP addresses for security threats and reputation. Deploy it on **Kubernetes** with a single command set that works on both **Windows** and **macOS**.
 
+## UI Screenshots
+
+> Place these images in an `images/` folder (or adjust the paths).
+
+### Login
+![Login Screen](images/login-120328.png)
+
+### Home (after login)
+![Home — Enter IP](images/ip-checker-empty-232212.png)
+
+### Result (example for 1.1.1.1)
+![Result — Reputation, Country, Provider](images/ip-checker-result-232237.png)
+
+---
 ## 🚀 **Quick Start**
 ```bash
 # Windows (PowerShell)
